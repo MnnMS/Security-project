@@ -16,7 +16,7 @@ namespace SecurityLibrary
         public string Encrypt(string plainText, string key)
         {
             string processedText = "";
-            for(int i = 0; i < plainText.Length; i += 2)
+            for(int i = 0; i+1 < plainText.Length; i += 2)
             {
                 processedText += plainText[i];
                 if (plainText[i] == plainText[i + 1])
@@ -25,11 +25,13 @@ namespace SecurityLibrary
             }
             if (processedText.Length % 2 != 0) processedText += 'x';
             char[,] matrix = getKey(key);
+
             // same row 
 
             // same column
 
             // diagonal
+            return "";
         }
 
         private char[,] getKey(string keyword)
@@ -41,12 +43,16 @@ namespace SecurityLibrary
             char s = 'a';
             for(int i = 0; i < 26; i++)
             {
+                
                 alpha.Add(s, 0);
+                if (s == 'j')
+                    alpha['j'] = 1;
                 s++;
             }
             for(int i = 0; i < keyword.Length; i++)
             {
                 char curr = keyword[i];
+                if (curr == 'j') curr = 'i';
                 if (alpha[curr] == 0)
                 {
                     uniqueText += curr;
@@ -57,17 +63,18 @@ namespace SecurityLibrary
             {
                 for(int j = 0; j < 5; j++)
                 {
+                    char c;
                     if (ind < uniqueText.Length)
                     {
-                        matrix[i, j] = uniqueText[ind];
+                        c = uniqueText[ind];
                         ind++;
                     }
                     else
                     {
-                        char c = alpha.First(x => x.Value == 0).Key;
-                        matrix[i, j] = c;
+                        c = alpha.First(x => x.Value == 0).Key;
                         alpha[c] = 1;
                     }
+                    matrix[i, j] = c;
                 }
             }
             return matrix;
