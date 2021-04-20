@@ -11,44 +11,12 @@ namespace SecurityLibrary
         public string Decrypt(string cipherText, string key)
         {
             cipherText = cipherText.ToLower();
-            char[,] matrix = getKey(key);
-            string result = string.Empty;
-            for (int i = 0; i<cipherText.Length; i += 2)
-            {
-                int[] indexesForChar1 = findIndexes(cipherText[i], matrix);
-                int[] indexesForChar2 = findIndexes(cipherText[i+1], matrix);
 
-                //same row 
-                if(indexesForChar1[0] == indexesForChar2[0])
-                {
-                    if (indexesForChar1[1] == 0) result += matrix[indexesForChar1[0], 4];
-                    else result += matrix[indexesForChar1[0], indexesForChar1[1]-1];
+            string result = mainLoop(-1, cipherText, key);
 
-                    if (indexesForChar2[1] == 0) result += matrix[indexesForChar2[0], 4];
-                    else result += matrix[indexesForChar2[0], indexesForChar2[1] - 1];
-                }
-
-                //same column
-                else if(indexesForChar1[1] == indexesForChar2[1])
-                {
-                    if (indexesForChar1[0] == 0) result += matrix[4, indexesForChar1[1]];
-                    else result += matrix[indexesForChar1[0]-1, indexesForChar1[1]];
-
-                    if (indexesForChar2[0] == 0) result += matrix[4, indexesForChar2[1]];
-                    else result += matrix[indexesForChar2[0]-1, indexesForChar2[1]];
-                }
-
-                //diagonal
-                else
-                {
-                    result += matrix[indexesForChar1[0], indexesForChar2[1]];
-                    result += matrix[indexesForChar2[0], indexesForChar1[1]];
-                }
-            }
             if (result[result.Length - 1] == 'x')
                 result = result.Remove(result.Length - 1, 1);
 
-           
             for (int i = 1; i < result.Length; i++)
                 if (result[i] == 'x' && result[i - 1] == result[i + 1]) { 
                     result = result.Remove(i, 1);
@@ -74,25 +42,38 @@ namespace SecurityLibrary
             else if(processedText.Length % 2 != 0)
                 processedText += 'x';
 
-            char[,] matrix = getKey(key);
+            return mainLoop(1, processedText, key);
+        }
 
-            for (int i = 0; i < processedText.Length; i += 2)
+        private string mainLoop(int flag, string text, string key)
+        {
+            char[,] matrix = getKey(key);
+            string result = "";
+            for (int i = 0; i < text.Length; i += 2)
             {
-                int[] indexesForChar1 = findIndexes(processedText[i], matrix);
-                int[] indexesForChar2 = findIndexes(processedText[i + 1], matrix);
+                int[] indexesForChar1 = findIndexes(text[i], matrix);
+                int[] indexesForChar2 = findIndexes(text[i + 1], matrix);
 
                 //same row 
                 if (indexesForChar1[0] == indexesForChar2[0])
                 {
-                    result += matrix[indexesForChar1[0], (indexesForChar1[1] + 1)%5];
-                    result += matrix[indexesForChar2[0], (indexesForChar2[1] + 1)% 5];
+                    int index1 = indexesForChar1[1] + 1*flag;
+                    int index2 = indexesForChar2[1] + 1*flag;
+                    if (index1 == -1) index1 = 4;
+                    if (index2 == -1) index2 = 4;
+                    result += matrix[indexesForChar1[0], index1%5];
+                    result += matrix[indexesForChar2[0], index2%5];
                 }
 
                 //same column
                 else if (indexesForChar1[1] == indexesForChar2[1])
                 {
-                    result += matrix[(indexesForChar1[0] + 1)%5, indexesForChar1[1]];
-                    result += matrix[(indexesForChar2[0] + 1)% 5, indexesForChar2[1]];
+                    int index1 = indexesForChar1[0] + 1 * flag;
+                    int index2 = indexesForChar2[0] + 1 * flag;
+                    if (index1 == -1) index1 = 4;
+                    if (index2 == -1) index2 = 4;
+                    result += matrix[index1%5, indexesForChar1[1]];
+                    result += matrix[index2%5, indexesForChar2[1]];
                 }
 
                 //diagonal
@@ -102,13 +83,7 @@ namespace SecurityLibrary
                     result += matrix[indexesForChar2[0], indexesForChar1[1]];
                 }
             }
-
             return result;
-        }
-
-        private string mainLoop(int flag, string text)
-        {
-
         }
 
         private char[,] getKey(string keyword)
@@ -157,10 +132,10 @@ namespace SecurityLibrary
             return matrix;
         }
 
-        private int[] findIndexes(char c , char[,] matrix)
+        private int[] findIndexes(char c, char[,] matrix)
         {
-            int[] arr=new int[2];
-            for(int i = 0; i < 5; i++)
+            int[] arr = new int[2];
+            for (int i = 0; i < 5; i++)
             {
                 for (int j = 0; j < 5; j++)
                     if (c == matrix[i, j])
@@ -168,10 +143,9 @@ namespace SecurityLibrary
                         arr[0] = i;
                         arr[1] = j;
                         break;
-                    }    
+                    }
             }
             return arr;
         }
-
     }
 }
