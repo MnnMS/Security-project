@@ -10,11 +10,60 @@ namespace SecurityLibrary
     {
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            cipherText = cipherText.ToLower();
+            char[,] matrix = getKey(key);
+            string result = string.Empty;
+            for (int i = 0; i<cipherText.Length; i += 2)
+            {
+                int[] indexesForChar1 = findIndexes(cipherText[i], matrix);
+                int[] indexesForChar2 = findIndexes(cipherText[i+1], matrix);
+                //same row 
+                if(indexesForChar1[0] == indexesForChar2[0])
+                {
+                    if (indexesForChar1[1] == 0) result += matrix[indexesForChar1[0], 4];
+                    else result += matrix[indexesForChar1[0], indexesForChar1[1]-1];
+
+                    if (indexesForChar2[1] == 0) result += matrix[indexesForChar2[0], 4];
+                    else result += matrix[indexesForChar2[0], indexesForChar2[1] - 1];
+                }
+
+                //same column
+                else if(indexesForChar1[1] == indexesForChar2[1])
+                {
+                    if (indexesForChar1[0] == 0) result += matrix[4, indexesForChar1[1]];
+                    else result += matrix[indexesForChar1[0]-1, indexesForChar1[1]];
+
+                    if (indexesForChar2[0] == 0) result += matrix[4, indexesForChar2[1]];
+                    else result += matrix[indexesForChar2[0]-1, indexesForChar2[1]];
+                }
+
+                //diagonal
+
+                else
+                {
+                    result += matrix[indexesForChar1[0], indexesForChar2[1]];
+                    result += matrix[indexesForChar2[0], indexesForChar1[1]];
+                }
+                
+                
+
+            }
+            if (result[result.Length - 1] == 'x')
+                result = result.Remove(result.Length - 1, 1);
+
+
+            for (int i = 1; i < result.Length; i++)
+                if (result[i] == 'x' && result[i - 1] == result[i + 1]) { 
+                    result = result.Remove(i, 1);
+                }
+
+            return result;
+
         }
 
         public string Encrypt(string plainText, string key)
         {
+            string result = string.Empty;
             string processedText = "";
             for(int i = 0; i+1 < plainText.Length; i += 2)
             {
@@ -26,11 +75,12 @@ namespace SecurityLibrary
             if (processedText.Length % 2 != 0) processedText += 'x';
             char[,] matrix = getKey(key);
 
-            // same row 
+            //same row 
 
-            // same column
+            //same column
 
-            // diagonal
+            //diagonal
+
             return "";
         }
 
@@ -79,5 +129,23 @@ namespace SecurityLibrary
             }
             return matrix;
         }
+
+        private int[] findIndexes(char c , char[,] matrix)
+        {
+            int[] arr=new int[2];
+            for(int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                    if (c == matrix[i, j])
+                    {
+                        arr[0] = i;
+                        arr[1] = j;
+                        break;
+                    }    
+            }
+            return arr;
+
+        }
+
     }
 }
