@@ -17,6 +17,7 @@ namespace SecurityLibrary
             {
                 int[] indexesForChar1 = findIndexes(cipherText[i], matrix);
                 int[] indexesForChar2 = findIndexes(cipherText[i+1], matrix);
+
                 //same row 
                 if(indexesForChar1[0] == indexesForChar2[0])
                 {
@@ -38,50 +39,76 @@ namespace SecurityLibrary
                 }
 
                 //diagonal
-
                 else
                 {
                     result += matrix[indexesForChar1[0], indexesForChar2[1]];
                     result += matrix[indexesForChar2[0], indexesForChar1[1]];
                 }
-                
-                
-
             }
             if (result[result.Length - 1] == 'x')
                 result = result.Remove(result.Length - 1, 1);
 
-
+           
             for (int i = 1; i < result.Length; i++)
                 if (result[i] == 'x' && result[i - 1] == result[i + 1]) { 
                     result = result.Remove(i, 1);
                 }
 
             return result;
-
         }
 
         public string Encrypt(string plainText, string key)
         {
             string result = string.Empty;
             string processedText = "";
-            for(int i = 0; i+1 < plainText.Length; i += 2)
+            if (plainText.Length % 2 != 0) plainText += 'x';
+            for (int i = 0; i < plainText.Length; i+=2)
             {
                 processedText += plainText[i];
                 if (plainText[i] == plainText[i + 1])
                     processedText += 'x';
                 processedText += plainText[i + 1];
             }
-            if (processedText.Length % 2 != 0) processedText += 'x';
+            if(processedText.Length%2!=0 && processedText[processedText.Length-1]=='x')
+                processedText = processedText.Remove(processedText.Length - 1, 1);
+            else if(processedText.Length % 2 != 0)
+                processedText += 'x';
+
             char[,] matrix = getKey(key);
 
-            //same row 
+            for (int i = 0; i < processedText.Length; i += 2)
+            {
+                int[] indexesForChar1 = findIndexes(processedText[i], matrix);
+                int[] indexesForChar2 = findIndexes(processedText[i + 1], matrix);
 
-            //same column
+                //same row 
+                if (indexesForChar1[0] == indexesForChar2[0])
+                {
+                    result += matrix[indexesForChar1[0], (indexesForChar1[1] + 1)%5];
+                    result += matrix[indexesForChar2[0], (indexesForChar2[1] + 1)% 5];
+                }
 
-            //diagonal
+                //same column
+                else if (indexesForChar1[1] == indexesForChar2[1])
+                {
+                    result += matrix[(indexesForChar1[0] + 1)%5, indexesForChar1[1]];
+                    result += matrix[(indexesForChar2[0] + 1)% 5, indexesForChar2[1]];
+                }
 
-            return "";
+                //diagonal
+                else
+                {
+                    result += matrix[indexesForChar1[0], indexesForChar2[1]];
+                    result += matrix[indexesForChar2[0], indexesForChar1[1]];
+                }
+            }
+
+            return result;
+        }
+
+        private string mainLoop(int flag, string text)
+        {
+
         }
 
         private char[,] getKey(string keyword)
@@ -144,7 +171,6 @@ namespace SecurityLibrary
                     }    
             }
             return arr;
-
         }
 
     }
