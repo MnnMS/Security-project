@@ -11,17 +11,33 @@ namespace SecurityLibrary
         public string Analyse(string plainText, string cipherText)
         {
             char[] key = new char[26];
+            List<char> alpha = new List<char>();
             cipherText = cipherText.ToLower();
             int ciTxtCnter = 0;
+            for (int i = 0; i < 26; i++)
+            {
+                alpha.Add((char)('a' + i));
+                key[i] = '0';
+            }
             foreach(char c in plainText)
             {
                 int index = c - 'a';
                 key[index] = cipherText[ciTxtCnter];
-                Console.WriteLine(key[index]);
+                alpha.Remove(cipherText[ciTxtCnter]);
                 ciTxtCnter++;
             }
+            for (int i = 0; i < 26; i++)
+            {
+                Console.WriteLine(key[i]);
+
+                if (key[i] == '0')
+                {
+                    key[i] = alpha[0];
+                    alpha.Remove(key[i]);
+                }
+            }
             string output = new string(key);
-            
+            Console.WriteLine(output);
             return output;
         }
 
@@ -80,8 +96,27 @@ namespace SecurityLibrary
         /// <returns>Plain text</returns>
         public string AnalyseUsingCharFrequency(string cipher)
         {
+            cipher = cipher.ToLower();
             string plainTxt = "";
-            SortedDictionary<>
+            List<int> test = new List<int>();
+            Dictionary<char, int> freqArr = new Dictionary<char, int>();
+            Dictionary<char, char> subArr = new Dictionary<char, char>();
+            foreach(char c in cipher)
+            {
+                if (freqArr.ContainsKey(c))
+                {
+                    freqArr[c]++;
+                }
+                else
+                {
+                    test[c - 'a'] = 0;
+                    freqArr.Add(c,1);
+                }
+            }
+            foreach(char c in cipher)
+            {
+
+            }
 
 
             return plainTxt;
