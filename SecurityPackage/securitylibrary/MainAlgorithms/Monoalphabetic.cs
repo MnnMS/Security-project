@@ -28,8 +28,6 @@ namespace SecurityLibrary
             }
             for (int i = 0; i < 26; i++)
             {
-                Console.WriteLine(key[i]);
-
                 if (key[i] == '0')
                 {
                     key[i] = alpha[0];
@@ -37,7 +35,6 @@ namespace SecurityLibrary
                 }
             }
             string output = new string(key);
-            Console.WriteLine(output);
             return output;
         }
 
