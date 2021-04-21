@@ -38,22 +38,32 @@ namespace SecurityLibrary
 
         public string Encrypt(string plainText, string key)
         {
-            string result = string.Empty;
             string processedText = "";
-            
-            if (plainText.Length % 2 != 0) plainText += 'x';
-
-            for (int i = 0; i < plainText.Length; i+=2)
+            int ind = 0;
+            while(ind < plainText.Length)
             {
-                processedText += plainText[i];
-                if (plainText[i] == plainText[i + 1])
-                    processedText += 'x';
-                processedText += plainText[i + 1];
+                if(ind + 1 < plainText.Length)
+                {
+                    string block = plainText.Substring(ind, 2);
+                    if (block[0] == block[1])
+                    {
+                        processedText += block[0];
+                        processedText += 'x';
+                        ind++;
+                    }
+                    else
+                    {
+                        processedText += block;
+                        ind += 2;
+                    }
+                }
+                else
+                {
+                    processedText += plainText[ind];
+                    ind++;
+                }
             }
-            if(processedText.Length%2!=0 && processedText[processedText.Length-1]=='x')
-                processedText = processedText.Remove(processedText.Length - 1, 1);
-            else if(processedText.Length % 2 != 0)
-                processedText += 'x';
+            if (processedText.Length % 2 != 0) processedText += 'x';
 
             return mainLoop(1, processedText, key);
         }
