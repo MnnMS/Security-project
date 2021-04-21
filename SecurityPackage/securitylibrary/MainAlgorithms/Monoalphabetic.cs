@@ -10,17 +10,41 @@ namespace SecurityLibrary
     {
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            char[] key = new char[26];
+            cipherText = cipherText.ToLower();
+            int ciTxtCnter = 0;
+            foreach(char c in plainText)
+            {
+                int index = c - 'a';
+                key[index] = cipherText[ciTxtCnter];
+                Console.WriteLine(key[index]);
+                ciTxtCnter++;
+            }
+            string output = new string(key);
+            
+            return output;
         }
 
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            string plainText = "";
+            foreach (char c in cipherText.ToLower())
+            {
+                int index = key.IndexOf(c);
+                plainText += (char)(index + 'a');
+            }
+            return plainText;
         }
 
         public string Encrypt(string plainText, string key)
         {
-            throw new NotImplementedException();
+            string cipherText = "";
+            foreach (char c in plainText)
+            {
+                int index = c - 'a';
+                cipherText += key[index];
+            }
+            return cipherText.ToUpper();
         }
 
         /// <summary>
@@ -56,7 +80,11 @@ namespace SecurityLibrary
         /// <returns>Plain text</returns>
         public string AnalyseUsingCharFrequency(string cipher)
         {
-            throw new NotImplementedException();
+            string plainTxt = "";
+            SortedDictionary<>
+
+
+            return plainTxt;
         }
     }
 }
