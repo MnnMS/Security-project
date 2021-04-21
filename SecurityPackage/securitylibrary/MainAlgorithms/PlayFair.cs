@@ -14,13 +14,24 @@ namespace SecurityLibrary
 
             string result = mainLoop(-1, cipherText, key);
 
+            int l = result.Length;
+
+            string newResult = string.Empty;
+
+            for (int i = 0; i < l-2; i+=2)
+                if (result[i+1] == 'x' && result[i] == result[i+2]) {
+                    newResult += result[i];
+                }
+                else
+                {
+                    newResult += result.Substring(i,2);
+                }
+            newResult += result.Substring(l-2, 2);
+
+            result = newResult;
+
             if (result[result.Length - 1] == 'x')
                 result = result.Remove(result.Length - 1, 1);
-
-            for (int i = 1; i < result.Length; i++)
-                if (result[i] == 'x' && result[i - 1] == result[i + 1]) { 
-                    result = result.Remove(i, 1);
-                }
 
             return result;
         }
@@ -29,7 +40,9 @@ namespace SecurityLibrary
         {
             string result = string.Empty;
             string processedText = "";
+            
             if (plainText.Length % 2 != 0) plainText += 'x';
+
             for (int i = 0; i < plainText.Length; i+=2)
             {
                 processedText += plainText[i];
