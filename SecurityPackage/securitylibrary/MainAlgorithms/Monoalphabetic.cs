@@ -95,26 +95,33 @@ namespace SecurityLibrary
         {
             cipher = cipher.ToLower();
             string plainTxt = "";
-            List<int> test = new List<int>();
             Dictionary<char, int> freqArr = new Dictionary<char, int>();
-            Dictionary<char, char> subArr = new Dictionary<char, char>();
+            string mostFreq = "ETAOINSRHLDCUMFPGWYBVKXJQZ".ToLower();
+
             foreach(char c in cipher)
             {
                 if (freqArr.ContainsKey(c))
-                {
                     freqArr[c]++;
-                }
                 else
-                {
-                    test[c - 'a'] = 0;
                     freqArr.Add(c,1);
-                }
             }
+
+            var myList = freqArr.ToList();
+            myList.Sort((pair1, pair2) => pair2.Value.CompareTo(pair1.Value));
+            int ind = 0;
+            Dictionary<char, char> map = new Dictionary<char, char>();
+
+            foreach (var c in myList)
+            {
+                char top = c.Key;
+                map.Add(top, mostFreq[ind]);
+                ind++;
+            }
+
             foreach(char c in cipher)
             {
-
+                plainTxt += map[c];
             }
-
 
             return plainTxt;
         }
