@@ -26,12 +26,29 @@ namespace SecurityLibrary
 
         public string Decrypt(string cipherText, int key)
         {
-            throw new NotImplementedException();
+            Characters.AddRange(array);
+            String pt = "";
+            foreach (char c in cipherText)
+            {
+                String ct = c.ToString();
+                int idx = Characters.IndexOf(ct);
+                idx = (idx - key) % 26;
+                string x = Characters[idx].ToLower();
+                pt = pt + x;
+            }
+            return pt;
         }
 
         public int Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            Characters.AddRange(array);
+
+            string pt = plainText[0].ToString().ToUpper();
+            int idx = Characters.IndexOf(pt);
+            string ct = cipherText[0].ToString();
+            int id2 = Characters.IndexOf(ct);
+            int Key = (id2 - idx) % 26;
+            return Key;
         }
     }
 }
