@@ -10,17 +10,54 @@ namespace SecurityLibrary
     {
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            char[] key = new char[26];
+            List<char> alpha = new List<char>();
+            cipherText = cipherText.ToLower();
+            int ciTxtCnter = 0;
+            for (int i = 0; i < 26; i++)
+            {
+                alpha.Add((char)('a' + i));
+                key[i] = '0';
+            }
+            foreach(char c in plainText)
+            {
+                int index = c - 'a';
+                key[index] = cipherText[ciTxtCnter];
+                alpha.Remove(cipherText[ciTxtCnter]);
+                ciTxtCnter++;
+            }
+            for (int i = 0; i < 26; i++)
+            {
+                if (key[i] == '0')
+                {
+                    key[i] = alpha[0];
+                    alpha.Remove(key[i]);
+                }
+            }
+            string output = new string(key);
+            return output;
         }
 
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            string plainText = "";
+            foreach (char c in cipherText.ToLower())
+            {
+                int index = key.IndexOf(c);
+                plainText += (char)(index + 'a');
+            }
+            return plainText;
         }
 
         public string Encrypt(string plainText, string key)
         {
-            throw new NotImplementedException();
+            string cipherText = "";
+            foreach (char c in plainText)
+            {
+                int index = c - 'a';
+                cipherText += key[index];
+            }
+            return cipherText.ToUpper();
         }
 
         /// <summary>
@@ -56,7 +93,37 @@ namespace SecurityLibrary
         /// <returns>Plain text</returns>
         public string AnalyseUsingCharFrequency(string cipher)
         {
-            throw new NotImplementedException();
+            cipher = cipher.ToLower();
+            string plainTxt = "";
+            Dictionary<char, int> freqArr = new Dictionary<char, int>();
+            string mostFreq = "ETAOINSRHLDCUMFPGWYBVKXJQZ".ToLower();
+
+            foreach(char c in cipher)
+            {
+                if (freqArr.ContainsKey(c))
+                    freqArr[c]++;
+                else
+                    freqArr.Add(c,1);
+            }
+
+            var myList = freqArr.ToList();
+            myList.Sort((pair1, pair2) => pair2.Value.CompareTo(pair1.Value));
+            int ind = 0;
+            Dictionary<char, char> map = new Dictionary<char, char>();
+
+            foreach (var c in myList)
+            {
+                char top = c.Key;
+                map.Add(top, mostFreq[ind]);
+                ind++;
+            }
+
+            foreach(char c in cipher)
+            {
+                plainTxt += map[c];
+            }
+
+            return plainTxt;
         }
     }
 }
