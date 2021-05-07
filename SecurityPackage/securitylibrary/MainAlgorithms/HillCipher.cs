@@ -209,7 +209,34 @@ namespace SecurityLibrary
 
         public List<int> Analyse3By3Key(List<int> plainText, List<int> cipherText)
         {
-            throw new NotImplementedException();
+            List<int> key = new List<int>();
+            int[,] cipher = (toMatrix(cipherText, 3, cipherText.Count / 3)), plain = (toMatrix(plainText, 3, plainText.Count / 3));
+            //int[,] plainTrns = transpose(plain);
+            int det = determ3(plain);
+            int[,] plainInv = new int[3,3];
+            if (gcd(det, 1) == 1)
+            {
+                int b = 1;
+                while (mod(b * det) != 1)
+                    b++;
+                plainInv = inverse3(plain, b);
+                int[,] keyMat = multiplyMat( plainInv,transpose(cipher));
+                key = toList(keyMat);
+            }
+
+            foreach(int item in key)
+            {
+                Console.WriteLine(item);
+            }
+            foreach (int item in cipher)
+            {
+                Console.WriteLine(item);
+            }
+            foreach (int item in plainInv)
+            {
+                Console.WriteLine(item);
+            }
+            return key;
         }
 
     }
