@@ -10,7 +10,21 @@ namespace SecurityLibrary
     {
         public int Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            int key = 2;
+            int count = plainText.Count() - 1;
+            for (int i = 0; i < count; i++)
+            {
+               string cT = Encrypt(plainText, key);
+                if (cT == cipherText)
+                {
+                    return key;
+                }
+                else
+                {
+                    key++;
+                }
+            }
+            return key;
         }
 
         public string Decrypt(string cipherText, int key)
