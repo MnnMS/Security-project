@@ -15,12 +15,55 @@ namespace SecurityLibrary
 
         public string Decrypt(string cipherText, int key)
         {
-            throw new NotImplementedException();
+            String pT = "";
+            string cT = cipherText.ToLower();
+            float div = (float)cT.Count() / key;
+            int col = (int)Math.Ceiling(div);
+            int count = cT.Count();
+            //int accomulator = (count + 1) - (col * key);
+            //int index;
+            string[] cipherMat = new string[key];
+            int row = 0, column = 0;
+            for (int j = 0; j < count; j++)
+            {
+                if ((row + 1) * col == j)
+                {
+                    row++;
+                }
+                cipherMat[row] += cT[j];
+                
+            }
+            for (int i = 0; i < col; i++)
+            {
+                for (int j = 0; j < key; j++)
+                {
+                    if (cipherMat[j].Length>i)
+                    {
+                        pT += cipherMat[j][i];
+                    }
+                    
+                }
+                
+            }
+            return pT;
         }
 
         public string Encrypt(string plainText, int key)
         {
-            throw new NotImplementedException();
+            string cT = "";
+            //float div = plainText.Count() / key;
+            string[] plainMat = new string[key];
+            for (int i = 0; i < plainText.Count(); i++)
+            {
+                int index = i % (key);
+                plainMat[index] += plainText[i];
+            }
+            for (int i = 0; i < key; i++)
+            {
+                cT += plainMat[i]; 
+            }
+            return cT.ToUpper();
         }
+        
     }
 }
