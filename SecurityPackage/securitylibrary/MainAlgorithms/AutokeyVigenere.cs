@@ -10,7 +10,19 @@ namespace SecurityLibrary
     {
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            string key = "";
+            string cT = cipherText.ToLower();
+            key = Decrypt(cipherText, plainText);
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                string keySub = key.Substring(i, key.Length- i);
+                string plainSub = plainText.Substring(0, key.Length - i);
+                if (keySub == plainSub)
+                {
+                    return key.Substring(0,i);
+                }
+            }
+            return key;
         }
 
         public string Decrypt(string cipherText, string key)
