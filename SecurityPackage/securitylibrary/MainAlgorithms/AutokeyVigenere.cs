@@ -15,7 +15,24 @@ namespace SecurityLibrary
 
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            string pT = "";
+            string cT = cipherText.ToLower();
+            int ascInd;
+            for (int i = 0; i < cT.Length; i++)
+            {
+                if (cT[i] < key[i])
+                    ascInd = 'z' - key[i] + cT[i] + 1;
+                else
+                    ascInd = cT[i] - key[i] + 'a';
+                pT += (char)ascInd;
+                if (key.Length<cT.Length)
+                {
+                    key += pT[i];
+                }
+            }
+            
+            Console.WriteLine(pT);
+            return pT;
         }
 
         public string Encrypt(string plainText, string key)
@@ -42,7 +59,7 @@ namespace SecurityLibrary
             }
 
 
-            Console.WriteLine(cT);
+            
             return cT.ToUpper();
         }
     }
