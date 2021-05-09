@@ -49,7 +49,24 @@ namespace SecurityLibrary
         }
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            char[,] vigenereTable = GetVigenereTable();
+            int length = cipherText.Length;
+            string key = string.Empty;
+            for (int i = 0; i < length; i++)
+            {
+                int indOfKey = ((int)plainText[i]) % 97;
+                for (int j = 0; j < 26; j++)
+                {
+                    if (vigenereTable[indOfKey, j] == cipherText[i])
+                    {
+                        key += (char)(97 + j);
+                        
+                    }
+                }
+                if (Encrypt(plainText, key) == cipherText)
+                    return key;
+            }
+            return key;
         }
 
         public string Decrypt(string cipherText, string key)
