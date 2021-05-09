@@ -8,10 +8,10 @@ namespace SecurityLibrary
 {
     public class RepeatingkeyVigenere : ICryptographicTechnique<string, string>
     {
-        public string GetKey(string key, string plainText)
+        public string GetKeyStream(string key, string Text)
         {
             int lenOfKey = key.Length;
-            int lenOfPt = plainText.Length;
+            int lenOfPt = Text.Length;
             int n = lenOfPt - lenOfKey;
             int ind = 0;
 
@@ -54,12 +54,26 @@ namespace SecurityLibrary
 
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            string key_stream = GetKeyStream(key, cipherText);
+            char[,] vigenereTable = GetVigenereTable();
+            int length = cipherText.Length;
+            string pt = string.Empty;
+            for (int i=0;i< length;i++)
+            {
+                int indOfKey = ((int)key_stream[i]) % 97;
+                for (int j = 0; j < 26; j++)
+                {
+                    if (vigenereTable[indOfKey, j] == cipherText[i])
+                        pt += (char)(97+j);
+                }
+            }
+            return pt;
+
         }
 
         public string Encrypt(string plainText, string key)
         {
-            string key_stream = GetKey(key, plainText);
+            string key_stream = GetKeyStream(key, plainText);
             char[,] vigenereTable = GetVigenereTable();
             string ct = string.Empty;
             int length = plainText.Length;
