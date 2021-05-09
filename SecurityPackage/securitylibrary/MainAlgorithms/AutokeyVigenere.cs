@@ -20,7 +20,30 @@ namespace SecurityLibrary
 
         public string Encrypt(string plainText, string key)
         {
-            throw new NotImplementedException();
+            string keyStream = "";
+            string cT = "";
+            int diff = plainText.Length - key.Length;
+
+            if (key.Length != plainText.Length)
+                keyStream = String.Concat(key, plainText.Substring(0, diff));
+            else
+                keyStream = key;
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                int ascInd = plainText[i] - 'a';
+                ascInd += keyStream[i];
+                if (ascInd  > 'z')
+                {
+                    int asciDiff = (ascInd - 'z')-1 ;
+                    ascInd = asciDiff + 'a';
+                }
+                cT += (char)ascInd;
+
+            }
+
+
+            Console.WriteLine(cT);
+            return cT.ToUpper();
         }
     }
 }
