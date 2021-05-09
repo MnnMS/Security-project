@@ -8,11 +8,61 @@ namespace SecurityLibrary
 {
     public class Columnar : ICryptographicTechnique<string, List<int>>
     {
+        public List<List<int>> lists = new List<List<int>>();
+        Random rand = new Random();
         public List<int> Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            int count = 2;
+            List<int> Key = new List<int>();
+            while(count< plainText.Length-1)
+            {
+                
+                int f = Fctorial(count);
+                while (f > 0)
+                {
+                    Key = GetPermutations(count);
+                   
+                    if (Encrypt(plainText, Key) == cipherText.ToLower())
+                        return Key;
+                    f--;
+                }
+                count++;
+                lists.Clear();
+
+
+            }
+            return Key;
+           
         }
 
+        public int Fctorial(int c)
+        {
+            int f = 1;
+            for (int i = 1; i <= c; i++)
+                f *= i;
+            return f;
+        }
+        public List<int> GetPermutations(int count)
+        {
+            List<int> result = new List<int>();
+            for (int i = 0; i < count; i++)
+            {
+               
+                int num = rand.Next(1, count + 1);
+                while (result.Contains(num))
+                {
+                    num = rand.Next(1, count + 1);
+                }
+                result.Add(num);
+            }
+            List<int> l = lists.Find(list => list.SequenceEqual(result) == true);
+            if (l != null) { 
+                GetPermutations(count);
+            }
+            if(l==null)
+               lists.Add(result);
+            return lists.Last();
+        }
         public string Decrypt(string cipherText, List<int> key)
         {
             int rowLength = key.Count;
