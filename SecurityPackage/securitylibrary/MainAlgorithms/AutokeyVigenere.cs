@@ -10,17 +10,69 @@ namespace SecurityLibrary
     {
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            string key = "";
+            string cT = cipherText.ToLower();
+            key = Decrypt(cipherText, plainText);
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                string keySub = key.Substring(i, key.Length- i);
+                string plainSub = plainText.Substring(0, key.Length - i);
+                if (keySub == plainSub)
+                {
+                    return key.Substring(0,i);
+                }
+            }
+            return key;
         }
 
         public string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            string pT = "";
+            string cT = cipherText.ToLower();
+            int ascInd;
+            for (int i = 0; i < cT.Length; i++)
+            {
+                if (cT[i] < key[i])
+                    ascInd = 'z' - key[i] + cT[i] + 1;
+                else
+                    ascInd = cT[i] - key[i] + 'a';
+                pT += (char)ascInd;
+                if (key.Length<cT.Length)
+                {
+                    key += pT[i];
+                }
+            }
+            
+            Console.WriteLine(pT);
+            return pT;
         }
 
         public string Encrypt(string plainText, string key)
         {
-            throw new NotImplementedException();
+            string keyStream = "";
+            string cT = "";
+            int diff = plainText.Length - key.Length;
+
+            if (key.Length != plainText.Length)
+                keyStream = String.Concat(key, plainText.Substring(0, diff));
+            else
+                keyStream = key;
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                int ascInd = plainText[i] - 'a';
+                ascInd += keyStream[i];
+                if (ascInd  > 'z')
+                {
+                    int asciDiff = (ascInd - 'z')-1 ;
+                    ascInd = asciDiff + 'a';
+                }
+                cT += (char)ascInd;
+
+            }
+
+
+            
+            return cT.ToUpper();
         }
     }
 }
