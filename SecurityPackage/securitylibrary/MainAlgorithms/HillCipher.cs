@@ -55,8 +55,12 @@ namespace SecurityLibrary
             int m = matrix.GetLength(0);
             int[,] inverse = new int[m,m];
             int a = matrix[0, 0], b = matrix[0,1], c = matrix[1,0], d = matrix[1,1];
-            int x = 1 / determ2(matrix);
+            int det = determ2(matrix);
+            if (det != -1 && det != 1)
+                throw new Exception();
 
+
+            int x = 1 / det;
             inverse[0, 0] = d * x;
             inverse[0, 1] = -1 * b * x;
             inverse[1, 0] = -1 * c * x;
@@ -73,7 +77,7 @@ namespace SecurityLibrary
             {
                 for (int j = 0; j < m; j++)
                 {
-                    int subDet = determ2(getSubMat(matrix, i, j));
+                    int subDet = (m == 3 ? determ2(getSubMat(matrix, i, j)) : 1);
                     inverse[i, j] = mod(b * (int)Math.Pow(-1, i + j) * subDet);
                 }
             }
@@ -96,28 +100,73 @@ namespace SecurityLibrary
             return trans;
         }
 
-        private int[,] multiplyMat(int[,] mat1, int[,] mat2)
+        private List<List<int>> generateKey()
         {
-            int n = mat2.GetLength(1);
-            List<int> cipher = toList(mat2);
-            int[,] result ;
-            List<int> res = new List<int>();
+            List<List<int>> result = new List<List<int>>();
+            for (int i = 0; i < 26; i++)
+            {
+                for(int j = 0; j < 26; j++)
+                {    
+                    for(int k = 0; k < 26; k++)
+                    {
+                        for (int l = 0; l < 26; l++)
+                        {
+                            List<int> key = new List<int>(new int[]{i, j, k, l});
+                            result.Add(key);
+                        }
+                    }          
+                   
+                }
+            }
+            return result;
+        }
+
+        /*private int[,] multMat(int[,] A, int[,] B)
+        {
+            int n = A.GetLength(0);
+            int m = B.GetLength(1);
+            int x = B.GetLength(0);
+            int[,] res = new int[n, m];
             for(int i = 0; i < n; i++)
             {
-                List<int> col = cipher.GetRange(i*3,3) ;
-                int[] resCol = new int[3];
-                for(int k = 0; k < 3; k++)
+                for(int j = 0; j < m; j++)
+                {
+                    int sum = 0;
+                    for(int k = 0; k < x; k++)
+                    {
+                        sum += A[i, k] * B[k, j];
+                    }
+                    res[i, j] = mod(sum);
+                }
+            }
+            return res;
+        }*/
+
+        private int[,] multiplyMat(int[,] key, int[,] textMat)
+        {
+            int n = textMat.GetLength(1);
+            int m = textMat.GetLength(0);
+            int keyDim = key.GetLength(0);
+            List<int> cipher = toList(textMat);
+            int[,] result ;
+            List<int> res = new List<int>();
+            int nOfCols = cipher.Count / keyDim;
+            for(int i = 0; i < nOfCols; i++)
+            {
+                List<int> col = cipher.GetRange(i* keyDim, keyDim) ;
+                int[] resCol = new int[keyDim];
+                for(int k = 0; k < keyDim; k++)
                 {
                     int cell = 0;
-                    for (int j = 0; j < 3; j++)
+                    for (int j = 0; j < keyDim; j++)
                     {
-                        cell += col[j] * mat1[k, j];
+                        cell += col[j] * key[k, j];
                     }
                     resCol[k] = mod(cell);
                 }
                 res.AddRange(resCol);
             }
-            result = toMatrix(res, 3, n);
+            result = toMatrix(res, m, n);
             return result;
         }
 
@@ -170,24 +219,53 @@ namespace SecurityLibrary
                 return gcd(n2, n1 % n2);
         }
 
+        private bool isValid(List<int> key, List<int> plainText, List<int> cipherText)
+        {
+            List<int> plain = Decrypt(cipherText, key);
+            for (int i = 0; i < plain.Count; i++)
+            {
+                if (plain[i] != plainText[i])
+                    return false;
+            }
+            return true;
+        }
+
         public List<int> Analyse(List<int> plainText, List<int> cipherText)
         {
-            throw new NotImplementedException();
+            List<int> key = new List<int>();
+            List<List<int>> choices = generateKey();
+            bool flag = false;
+            for(int i = 0; i < choices.Count; i++)
+            {
+                int det = determ2(toMatrix(choices[i], 2, 2));
+                if ((det==1 || det==-1)&&(isValid(choices[i], plainText, cipherText)))
+                {
+                    flag = true;
+                    key = choices[i];
+                    break;
+                }
+            }
+            if (!flag)
+                throw new InvalidAnlysisException();
+  
+            return key;
         }
 
         public List<int> Decrypt(List<int> cipherText, List<int> key)
         {
             List<int> plain = new List<int>();
-            int[,] cipher = (toMatrix(cipherText, 3, cipherText.Count/3)), keyMat = toMatrix(key, 3, 3);
-            if(key.Count == 4) // 2x2 inverse
+            int m = (int)Math.Sqrt(key.Count);
+            int[,] cipher = (toMatrix(cipherText, m, cipherText.Count/m)), keyMat = toMatrix(key, m, m);
+            if(m == 2) // 2x2 inverse
             {
                 int [,] keyInv = inverse2(keyMat);
-                
+                int[,] plainMat = multiplyMat(keyInv, cipher);
+                plain = toList(plainMat);         
             }
             else // 3x3 inverse 
             {
                 int det = determ3(keyMat);
-                if(gcd(det, 1) == 1)
+                if (gcd(det, 1) == 1)
                 {
                     int b = 1;
                     while (mod(b * det) != 1)
@@ -196,6 +274,8 @@ namespace SecurityLibrary
                     int[,] plainMat = multiplyMat(keyInv, cipher);
                     plain = toList(plainMat);
                 }
+                else
+                    throw new Exception();
             }
             return plain;
         }
@@ -205,7 +285,6 @@ namespace SecurityLibrary
         {
             throw new NotImplementedException();
         }
-
 
         public List<int> Analyse3By3Key(List<int> plainText, List<int> cipherText)
         {
@@ -222,19 +301,6 @@ namespace SecurityLibrary
                 plainInv = inverse3(plain, b);
                 int[,] keyMat = multiplyMat( plainInv,transpose(cipher));
                 key = toList(keyMat);
-            }
-
-            foreach(int item in key)
-            {
-                Console.WriteLine(item);
-            }
-            foreach (int item in cipher)
-            {
-                Console.WriteLine(item);
-            }
-            foreach (int item in plainInv)
-            {
-                Console.WriteLine(item);
             }
             return key;
         }
