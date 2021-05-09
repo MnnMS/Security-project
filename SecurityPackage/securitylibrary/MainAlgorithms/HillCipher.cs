@@ -61,10 +61,10 @@ namespace SecurityLibrary
 
 
             int x = 1 / det;
-            inverse[0, 0] = d * x;
-            inverse[0, 1] = -1 * b * x;
-            inverse[1, 0] = -1 * c * x;
-            inverse[1, 1] = a * x;
+            inverse[0, 0] = mod(d * x);
+            inverse[0, 1] = mod(-1 * b * x);
+            inverse[1, 0] = mod(-1 * c * x);
+            inverse[1, 1] = mod(a * x);
 
             return inverse;
         }
