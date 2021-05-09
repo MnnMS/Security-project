@@ -283,7 +283,24 @@ namespace SecurityLibrary
 
         public List<int> Encrypt(List<int> plainText, List<int> key)
         {
-            throw new NotImplementedException();
+            int m =(int)Math.Sqrt(key.Count());
+            int[,] keyMat = toMatrix(key, m, m);
+            int n = (int)Math.Ceiling((double)(plainText.Count() / m));
+            int[,] ptMat = toMatrix(plainText,m,n);
+            int[,] resultMat = multiplyMat(keyMat, ptMat);
+            int nOfRows = resultMat.GetLength(0);
+            int nOfCols = resultMat.GetLength(1);
+            List<int> ct = new List<int>();
+
+            for (int i=0;i< nOfRows; i++)
+                for(int j=0;j< nOfCols; j++) {
+
+                    ct.Add((int)resultMat[i,j] % 32);
+                }
+
+
+            return ct;
+
         }
 
         public List<int> Analyse3By3Key(List<int> plainText, List<int> cipherText)
