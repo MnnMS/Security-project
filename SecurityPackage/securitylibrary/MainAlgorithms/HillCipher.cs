@@ -121,27 +121,6 @@ namespace SecurityLibrary
             return result;
         }
 
-        /*private int[,] multMat(int[,] A, int[,] B)
-        {
-            int n = A.GetLength(0);
-            int m = B.GetLength(1);
-            int x = B.GetLength(0);
-            int[,] res = new int[n, m];
-            for(int i = 0; i < n; i++)
-            {
-                for(int j = 0; j < m; j++)
-                {
-                    int sum = 0;
-                    for(int k = 0; k < x; k++)
-                    {
-                        sum += A[i, k] * B[k, j];
-                    }
-                    res[i, j] = mod(sum);
-                }
-            }
-            return res;
-        }*/
-
         private int[,] multiplyMat(int[,] key, int[,] textMat)
         {
             int n = textMat.GetLength(1);
