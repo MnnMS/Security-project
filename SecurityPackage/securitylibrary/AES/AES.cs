@@ -66,6 +66,25 @@ namespace SecurityLibrary.AES
             return new_block;
         }
 
+        public string[,] AddRoundKey(string[,] plain, string[,] key)
+        {
+            string[,] new_block = new string[row_col, row_col];
+
+            for(int i = 0; i < row_col; i++)
+            {
+                for (int j = 0; j < row_col; j++)
+                {
+                    int[] byte1 = Byte_to_Int(plain[i, j]), byte2 = Byte_to_Int(key[i, j]);
+                    int[] res = {byte1[0]^byte2[0], byte1[1]^byte2[1]};
+                    int ans = res[0] * 10 + res[1];
+                    
+                    new_block[i,j] = ans.ToString("x");
+                }
+            }
+
+            return new_block;
+        }
+
         public int[] Byte_to_Int(string Byte)
         {
             int[] res = new int[2];
