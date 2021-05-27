@@ -32,14 +32,23 @@ namespace SecurityLibrary.AES
             string[,] keyMat = GetMatrix(key.ToLower());
 
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-            for (int i = num_of_rounds - 2; i >= 1 ; i--)
+
+            List<string[,]> listOfKeys = new List<string[,]>();
+            for (int i = 1  ; i <= 10; i++)
+            {
+                keyMat = KeySchedule(keyMat, i);
+                //cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
+                listOfKeys.Add(keyMat);
+            }
+
+            for (int i = num_of_rounds - 1 ; i >= 1 ; i--)
             {
                 
                 cipherTextMat = InvShiftRows(cipherTextMat);
 
                 cipherTextMat = SubBytes(cipherTextMat);
 
-                keyMat = KeySchedule(keyMat, i + 1);
+                keyMat = listOfKeys[i];
                 cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
 
                 cipherTextMat = MixColumns(cipherTextMat);
@@ -49,7 +58,7 @@ namespace SecurityLibrary.AES
 
             cipherTextMat = SubBytes(cipherTextMat);
             
-            keyMat = KeySchedule(keyMat, 1);
+            keyMat = listOfKeys[ 0];
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
 
             
