@@ -20,18 +20,47 @@ namespace SecurityLibrary.AES
             { "a", 10 }, { "b", 11 }, { "c", 12 }, { "d", 13 }, { "e", 14 }, { "f", 15 }
         };
         List<string> rcon;
-        int[,] constant_matrix = { { 0x02, 0x03, 0x01, 0x01 }, { 0x01, 0x02, 0x03, 0x01 }, { 0x01, 0x01, 0x02, 0x03 }, { 0x03, 0x01, 0x01, 0x02 } };
-        string[,] sbox;
+        int[,] mixCol_matrix = { { 0x02, 0x03, 0x01, 0x01 }, { 0x01, 0x02, 0x03, 0x01 }, { 0x01, 0x01, 0x02, 0x03 }, { 0x03, 0x01, 0x01, 0x02 } };
+        int[,] InvmixCol_matrix = { { 0x0E, 0x0B, 0x0D, 0x09 }, { 0x09, 0x0E, 0x0B, 0x0D }, { 0x0D, 0x09, 0x0E, 0x0B }, { 0x0B, 0x0D, 0x09, 0x0E } };
+        string[,] sbox; int[,] constant_matrix;
         public override string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            rcon = new List<string>();
+            sbox = read_SBox(true);
+            constant_matrix = InvmixCol_matrix;
+            string[,] cipherTextMat = GetMatrix(cipherText.ToLower());
+            string[,] keyMat = GetMatrix(key.ToLower());
+
+            cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
+            for (int i = num_of_rounds - 1; i >= 1 ; i++)
+            {
+                
+                cipherTextMat = InvShiftRows(cipherTextMat);
+
+                cipherTextMat = SubBytes(cipherTextMat);
+
+                keyMat = KeySchedule(keyMat, i + 1);
+                cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
+
+                cipherTextMat = MixColumns(cipherTextMat);
+
+            }
+            cipherTextMat = InvShiftRows(cipherTextMat);
+
+            cipherTextMat = SubBytes(cipherTextMat);
+            
+            keyMat = KeySchedule(keyMat, num_of_rounds);
+            cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
+
+            
+            return GetString(cipherTextMat);
         }
 
         public override string Encrypt(string plainText, string key)
         {
             rcon = new List<string>();
             sbox = read_SBox(false);
-
+            constant_matrix = mixCol_matrix;
             string[,] plainTextMat = GetMatrix(plainText.ToLower());
             string[,] keyMat= GetMatrix(key.ToLower());
 
@@ -56,7 +85,7 @@ namespace SecurityLibrary.AES
             keyMat = KeySchedule(keyMat, num_of_rounds);
             plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
-            return GetCipherString(plainTextMat);
+            return GetString(plainTextMat);
         }
         public string[,] GetMatrix(string stringarray)
         {
@@ -74,7 +103,7 @@ namespace SecurityLibrary.AES
             return matrix;
         }
 
-        public string GetCipherString(string[,] plain)
+        public string GetString(string[,] plain)
         {
             string Cipher = "0x";
             for (int i = 0; i < row_col; i++)
@@ -179,6 +208,7 @@ namespace SecurityLibrary.AES
         }
         
 
+
         public string[,] AddRoundKey(string[,] plain, string[,] key)
         {
             string[,] new_block = new string[row_col, row_col];
@@ -244,6 +274,21 @@ namespace SecurityLibrary.AES
                 {
                     int col = (j + (row_col-i)) % row_col;
                     newPlain[i, col] = plain[i, j];
+                }
+            }
+            return newPlain;
+        }
+        public string[,] InvShiftRows(string[,] plain)
+        {
+            string[,] newPlain = new string[row_col, row_col];
+            for (int i = 0; i < row_col; i++)
+                newPlain[0, i] = plain[0, i];
+            for (int i = 1; i < row_col; i++)
+            {
+                for (int j = 0; j < row_col; j++)
+                {
+                    int col = (j + (row_col - i)) % row_col;
+                    newPlain[i, j] = plain[i, col];
                 }
             }
             return newPlain;
