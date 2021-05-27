@@ -32,7 +32,7 @@ namespace SecurityLibrary.AES
             string[,] keyMat = GetMatrix(key.ToLower());
 
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-            for (int i = num_of_rounds - 1; i >= 1 ; i++)
+            for (int i = num_of_rounds - 1; i >= 1 ; i--)
             {
                 
                 cipherTextMat = InvShiftRows(cipherTextMat);
