@@ -49,7 +49,7 @@ namespace SecurityLibrary.AES
 
             cipherTextMat = SubBytes(cipherTextMat);
             
-            keyMat = KeySchedule(keyMat, num_of_rounds);
+            keyMat = KeySchedule(keyMat, 1);
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
 
             
