@@ -20,6 +20,7 @@ namespace SecurityLibrary.AES
             { "a", 10 }, { "b", 11 }, { "c", 12 }, { "d", 13 }, { "e", 14 }, { "f", 15 }
         };
         List<string> rcon;
+        int[,] constant_matrix = { { 0x02, 0x03, 0x01, 0x01 }, { 0x01, 0x02, 0x03, 0x01 }, { 0x01, 0x01, 0x02, 0x03 }, { 0x03, 0x01, 0x01, 0x02 } };
 
         public override string Decrypt(string cipherText, string key)
         {
@@ -178,6 +179,69 @@ namespace SecurityLibrary.AES
             }
 
             return Sbox;
+        }
+        public string[,] ShiftRows(string[,] plain)
+        {
+            string[,] newPlain = new string[row_col, row_col];
+            for (int i = 0; i < row_col; i++)
+            {
+                for (int j = 0; j < row_col; j++)
+                {
+                    int col = (j + i + row_col) % row_col;
+                    newPlain[i, j] = plain[i, col];
+                }
+            }
+            return newPlain;
+        }
+        public string[,] MixColumns(string[,] plain)
+        {
+            string[,] newPlain = new string[row_col, row_col];
+            for (int i = 0; i < row_col; i++)
+            {
+                for (int j = 0; i < row_col; j++)
+                {
+                    int value = 0;
+                    for (int k = 0; i < row_col; k++)
+                    {
+                        value = GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[i, k], System.Globalization.NumberStyles.HexNumber));
+                    }
+                    newPlain[j, i] = value.ToString();
+                }
+            }
+            return newPlain;
+        }
+
+        public int GetMultiplicationValue(int r, int Byte)
+        {
+            if (r == 0x01)
+                return Byte;
+            else if (r == 0x02)
+            {
+                if ((Byte & 10000000) > 0)
+                {
+                    Byte = (Byte << 1) & 0xff;
+                    Byte ^= 0x1b;
+                }
+                else
+                {
+                    Byte = (Byte << 1);
+                }
+                return Byte;
+            }
+            else
+            {
+                int r1 = Byte;
+                if ((Byte & 10000000) > 0)
+                {
+                    Byte = (Byte << 1) & 0xff;
+                    Byte ^= 0x1b;
+                }
+                else
+                {
+                    Byte = (Byte << 1);
+                }
+                return Byte ^ r1;
+            }
         }
     }
 }
