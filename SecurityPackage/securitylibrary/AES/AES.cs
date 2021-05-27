@@ -31,23 +31,73 @@ namespace SecurityLibrary.AES
         {
             rcon = new List<string>();
             // --- (plain to blocks) ---
-
+            string[,] plainTextMat = GetMatrix(plainText.ToLower());
+            string[,] keyMat= GetMatrix(key.ToLower());
             // --- (intial) ---
             // addRoundKey
+            plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
             // --- (num_of_rounds - 1) ---
             // 1.subBytes
             // 2.shiftRows - Menna
             // 3.mixColumns - Menna
             // 4.addRoundKey
+            for(int i=0;i< num_of_rounds - 1; i++)
+            {
+                //1.subBytes
+                plainTextMat=SubBytes(plainTextMat);
 
+                //2.shiftRows
+                plainTextMat=ShiftRows(plainTextMat);
+
+                //mixColumns
+                plainTextMat = MixColumns(plainTextMat);
+
+                //addRoundKey
+                keyMat = KeySchedule(keyMat, i + 1);
+                plainTextMat = AddRoundKey(plainTextMat, keyMat);
+
+            }
             // --- (final round) ---
             // 1.subBytes
+            plainTextMat = SubBytes(plainTextMat);
             // 2.shiftRows
+            plainTextMat = ShiftRows(plainTextMat);
             // 3.addRoundKey
+            keyMat = KeySchedule(keyMat, num_of_rounds - 1);
+            plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
+            return GetCipherString(plainTextMat);
+        }
+        public string[,] GetMatrix(string stringarray)
+        {
+            string[,] matrix = new string[row_col, row_col];
+            int ind = 2;
+            for(int i=0; i< row_col; i++)
+            {
+                for(int j=0;j< row_col; j++)
+                {
+                    matrix[i, j] = stringarray.Substring(ind, 2);
+                    ind+=2;
+                }
+                    
+            }
+            return matrix;
+        }
 
-            throw new NotImplementedException();
+        public string GetCipherString(string[,] plain)
+        {
+            string Cipher = "0x";
+            for (int i = 0; i < row_col; i++)
+            {
+                for (int j = 0; j < row_col; j++)
+                {
+                    Cipher += plain[i, j];
+                }
+
+            }
+            return Cipher;
+
         }
 
         public void UpdateRcon(int index)
@@ -73,12 +123,12 @@ namespace SecurityLibrary.AES
             string[,] prev_W = new string[row_col, 1];
             for(int i = 0; i < row_col; i++)
             {
-                prev_W[i, 1] = (prev_key[i, row_col - 1]);
+                prev_W[i,0] = prev_key[i, row_col - 1];
             }
 
-            string temp = prev_W[0, 1];
-            prev_W[0, 1] = prev_W[row_col - 1, 1];
-            prev_W[row_col - 1, 1] = temp;
+            string temp = prev_W[0, 0];
+            prev_W[0, 0] = prev_W[row_col - 1, 0];
+            prev_W[row_col - 1, 0] = temp;
 
             prev_W = SubBytes(prev_W);
             UpdateRcon(round - 1);
@@ -114,14 +164,20 @@ namespace SecurityLibrary.AES
 
         public string[,] SubBytes(string [,] plain)
         {
+            int rowsOrHeight = plain.GetLength(0);
+            int colsOrWidth = plain.GetLength(1);
             string[,] new_block = new string[row_col, row_col];
             string[,] sbox = read_SBox(true);
 
-            for(int i = 0; i < row_col; i++)
+            for(int i = 0; i < rowsOrHeight; i++)
             {
-                for(int j = 0; j < row_col; j++)
+                for(int j = 0; j < colsOrWidth; j++)
                 {
                     string curr_byte = plain[i, j];
+                    if (curr_byte.Length == 1)
+                    {
+                        curr_byte=curr_byte.Insert(0, "0");
+                    }
                     int[] RC = Byte_to_Int(curr_byte);
                     string new_byte = sbox[RC[0] + 1, RC[1] + 1];
                     new_block[i, j] = new_byte;
@@ -155,8 +211,14 @@ namespace SecurityLibrary.AES
         {
             int[] res = new int[2];
             string a = Byte[0].ToString(), b = Byte[1].ToString();
-            res[0] = Math.Min(int.Parse(a), Hex[a]);
-            res[1] = Math.Min(int.Parse(b), Hex[b]);
+            if(Hex.ContainsKey(a)==true)
+                res[0] = Hex[a];
+            else
+                res[0] = int.Parse(a);
+            if (Hex.ContainsKey(b) == true)
+                res[1] = Hex[b];
+            else
+                res[1] = int.Parse(b);
             return res;
         }
 
@@ -171,6 +233,9 @@ namespace SecurityLibrary.AES
                 string[] row = line.Split(seps, StringSplitOptions.RemoveEmptyEntries);
                 for(int j = 0; j <= block_size; j++)
                 {
+                    
+                    if (row[j].Length == 1)
+                        row[j]=row[j].Insert(0, "0");
                     Sbox[index, j] = row[j];
                     if (index == 0 && j + 1 == block_size)
                         break;
@@ -198,10 +263,10 @@ namespace SecurityLibrary.AES
             string[,] newPlain = new string[row_col, row_col];
             for (int i = 0; i < row_col; i++)
             {
-                for (int j = 0; i < row_col; j++)
+                for (int j = 0; j < row_col; j++)
                 {
                     int value = 0;
-                    for (int k = 0; i < row_col; k++)
+                    for (int k = 0; k < row_col; k++)
                     {
                         value = GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[i, k], System.Globalization.NumberStyles.HexNumber));
                     }
