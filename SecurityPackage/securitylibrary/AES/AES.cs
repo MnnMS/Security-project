@@ -21,7 +21,7 @@ namespace SecurityLibrary.AES
         };
         List<string> rcon;
         int[,] constant_matrix = { { 0x02, 0x03, 0x01, 0x01 }, { 0x01, 0x02, 0x03, 0x01 }, { 0x01, 0x01, 0x02, 0x03 }, { 0x03, 0x01, 0x01, 0x02 } };
-
+        string[,] sbox;
         public override string Decrypt(string cipherText, string key)
         {
             throw new NotImplementedException();
@@ -30,41 +30,30 @@ namespace SecurityLibrary.AES
         public override string Encrypt(string plainText, string key)
         {
             rcon = new List<string>();
-            // --- (plain to blocks) ---
+            sbox = read_SBox(false);
+
             string[,] plainTextMat = GetMatrix(plainText.ToLower());
             string[,] keyMat= GetMatrix(key.ToLower());
-            // --- (intial) ---
-            // addRoundKey
+
             plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
-            // --- (num_of_rounds - 1) ---
-            // 1.subBytes
-            // 2.shiftRows - Menna
-            // 3.mixColumns - Menna
-            // 4.addRoundKey
             for(int i=0;i< num_of_rounds - 1; i++)
             {
-                //1.subBytes
                 plainTextMat=SubBytes(plainTextMat);
 
-                //2.shiftRows
                 plainTextMat=ShiftRows(plainTextMat);
 
-                //mixColumns
                 plainTextMat = MixColumns(plainTextMat);
 
-                //addRoundKey
                 keyMat = KeySchedule(keyMat, i + 1);
                 plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
             }
-            // --- (final round) ---
-            // 1.subBytes
             plainTextMat = SubBytes(plainTextMat);
-            // 2.shiftRows
+
             plainTextMat = ShiftRows(plainTextMat);
-            // 3.addRoundKey
-            keyMat = KeySchedule(keyMat, num_of_rounds - 1);
+
+            keyMat = KeySchedule(keyMat, num_of_rounds);
             plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
             return GetCipherString(plainTextMat);
@@ -77,7 +66,7 @@ namespace SecurityLibrary.AES
             {
                 for(int j=0;j< row_col; j++)
                 {
-                    matrix[i, j] = stringarray.Substring(ind, 2);
+                    matrix[j, i] = stringarray.Substring(ind, 2);
                     ind+=2;
                 }
                     
@@ -92,7 +81,7 @@ namespace SecurityLibrary.AES
             {
                 for (int j = 0; j < row_col; j++)
                 {
-                    Cipher += plain[i, j];
+                    Cipher += plain[j, i];
                 }
 
             }
@@ -107,14 +96,14 @@ namespace SecurityLibrary.AES
                 rcon.Add("01");
                 return;
             }
-            int[] res = Byte_to_Int(rcon[index-1]);
-            int R_prev = res[0] * 10 + res[1];
+            int R_prev = int.Parse(rcon[index - 1], System.Globalization.NumberStyles.HexNumber);
             int new_R = R_prev * 2;
             if (R_prev >= 128)
             {
                 new_R = new_R ^ 283;
             }
-            rcon.Add(new_R.ToString("x"));
+           
+            rcon.Add(new_R.ToString("x2"));
         }
 
         public string[,] KeySchedule(string[,] prev_key, int round)
@@ -123,11 +112,14 @@ namespace SecurityLibrary.AES
             string[,] prev_W = new string[row_col, 1];
             for(int i = 0; i < row_col; i++)
             {
-                prev_W[i,0] = prev_key[i, row_col - 1];
+                prev_W[i, 0] = prev_key[i, row_col - 1];
             }
 
             string temp = prev_W[0, 0];
-            prev_W[0, 0] = prev_W[row_col - 1, 0];
+            for (int i = 1; i < row_col; i++)
+            {
+                prev_W[i - 1, 0] = prev_W[i, 0];
+            }
             prev_W[row_col - 1, 0] = temp;
 
             prev_W = SubBytes(prev_W);
@@ -154,12 +146,11 @@ namespace SecurityLibrary.AES
 
         public string XOR(string a, string b)
         {
-            int[] a_val = Byte_to_Int(a);
-            int[] b_val = Byte_to_Int(b);
-            int A = a_val[0] * 10 + a_val[1];
-            int B = b_val[0] * 10 + b_val[1];
-            int res = A ^ B;
-            return res.ToString("x");
+            int[] byte1 = Byte_to_Int(a);
+            int[] byte2 = Byte_to_Int(b);
+            int[] res = { byte1[0] ^ byte2[0], byte1[1] ^ byte2[1] };
+            string ans = res[0].ToString("x") + res[1].ToString("x");
+            return ans;
         }
 
         public string[,] SubBytes(string [,] plain)
@@ -167,7 +158,7 @@ namespace SecurityLibrary.AES
             int rowsOrHeight = plain.GetLength(0);
             int colsOrWidth = plain.GetLength(1);
             string[,] new_block = new string[row_col, row_col];
-            string[,] sbox = read_SBox(true);
+            
 
             for(int i = 0; i < rowsOrHeight; i++)
             {
@@ -179,7 +170,7 @@ namespace SecurityLibrary.AES
                         curr_byte=curr_byte.Insert(0, "0");
                     }
                     int[] RC = Byte_to_Int(curr_byte);
-                    string new_byte = sbox[RC[0] + 1, RC[1] + 1];
+                    string new_byte = sbox[RC[0], RC[1]];
                     new_block[i, j] = new_byte;
                 }
             }
@@ -198,9 +189,9 @@ namespace SecurityLibrary.AES
                 {
                     int[] byte1 = Byte_to_Int(plain[i, j]), byte2 = Byte_to_Int(key[i, j]);
                     int[] res = {byte1[0]^byte2[0], byte1[1]^byte2[1]};
-                    int ans = res[0] * 10 + res[1];
-                    
-                    new_block[i,j] = ans.ToString("x");
+                    string ans = res[0].ToString("x") + res[1].ToString("x");
+
+                    new_block[i, j] = ans;
                 }
             }
 
@@ -224,23 +215,20 @@ namespace SecurityLibrary.AES
 
         public string[,] read_SBox(bool inverse)
         {
-            string[,] Sbox = new string[block_size+1, block_size+1];
+            string[,] Sbox = new string[block_size, block_size];
             string file_name = (inverse ? "invers-sbox.txt" : "s-box.txt");
             string[] lines = File.ReadAllLines(file_name);
-            int index = 0;
-            foreach (string line in lines)
+            for(int index=0;index<block_size;index++)
             {
+                string line = lines[index];
                 string[] row = line.Split(seps, StringSplitOptions.RemoveEmptyEntries);
-                for(int j = 0; j <= block_size; j++)
+                for(int j = 0; j < block_size; j++)
                 {
                     
                     if (row[j].Length == 1)
                         row[j]=row[j].Insert(0, "0");
                     Sbox[index, j] = row[j];
-                    if (index == 0 && j + 1 == block_size)
-                        break;
                 }
-                index++;
             }
 
             return Sbox;
@@ -249,11 +237,13 @@ namespace SecurityLibrary.AES
         {
             string[,] newPlain = new string[row_col, row_col];
             for (int i = 0; i < row_col; i++)
+                newPlain[0, i] = plain[0, i];
+            for (int i = 1; i < row_col; i++)
             {
                 for (int j = 0; j < row_col; j++)
                 {
-                    int col = (j + i + row_col) % row_col;
-                    newPlain[i, j] = plain[i, col];
+                    int col = (j + (row_col-i)) % row_col;
+                    newPlain[i, col] = plain[i, j];
                 }
             }
             return newPlain;
@@ -265,12 +255,12 @@ namespace SecurityLibrary.AES
             {
                 for (int j = 0; j < row_col; j++)
                 {
-                    int value = 0;
+                    int value = 0x00;
                     for (int k = 0; k < row_col; k++)
                     {
-                        value = GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[i, k], System.Globalization.NumberStyles.HexNumber));
+                        value = value^GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[k, i], System.Globalization.NumberStyles.HexNumber));
                     }
-                    newPlain[j, i] = value.ToString();
+                    newPlain[j, i] = value.ToString("x2");
                 }
             }
             return newPlain;
