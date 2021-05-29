@@ -24,7 +24,7 @@ namespace SecurityLibrary.AES
         int[,] InvmixCol_matrix = { { 0x0e, 0x0b, 0x0d, 0x09 }, { 0x09, 0x0e, 0x0b, 0x0d }, { 0x0d, 0x09, 0x0e, 0x0b }, { 0x0b, 0x0d, 0x09, 0x0e } };
         string[,] sbox; int[,] constant_matrix;
 
-        public List<string[,]> get_keys(string [,] key)
+        public List<string[,]> get_keys(string[,] key)
         {
             sbox = read_SBox(false);
             List<string[,]> listOfKeys = new List<string[,]>();
@@ -51,21 +51,21 @@ namespace SecurityLibrary.AES
             cipherTextMat = InvShiftRows(cipherTextMat);
             cipherTextMat = SubBytes(cipherTextMat);
 
-            for (int i = num_of_rounds - 1 ; i >= 1 ; i--)
+            for (int i = num_of_rounds - 1; i >= 1; i--)
             {
                 keyMat = listOfKeys[i];
                 cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-                
+
                 cipherTextMat = MixColumns(cipherTextMat);
 
                 cipherTextMat = InvShiftRows(cipherTextMat);
 
                 cipherTextMat = SubBytes(cipherTextMat);
             }
-            
+
             keyMat = listOfKeys[0];
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-       
+
             return GetString(cipherTextMat);
         }
 
@@ -75,15 +75,15 @@ namespace SecurityLibrary.AES
             sbox = read_SBox(false);
             constant_matrix = mixCol_matrix;
             string[,] plainTextMat = GetMatrix(plainText.ToLower());
-            string[,] keyMat= GetMatrix(key.ToLower());
+            string[,] keyMat = GetMatrix(key.ToLower());
 
             plainTextMat = AddRoundKey(plainTextMat, keyMat);
 
-            for(int i=0;i< num_of_rounds - 1; i++)
+            for (int i = 0; i < num_of_rounds - 1; i++)
             {
-                plainTextMat=SubBytes(plainTextMat);
+                plainTextMat = SubBytes(plainTextMat);
 
-                plainTextMat=ShiftRows(plainTextMat);
+                plainTextMat = ShiftRows(plainTextMat);
 
                 plainTextMat = MixColumns(plainTextMat);
 
@@ -104,14 +104,14 @@ namespace SecurityLibrary.AES
         {
             string[,] matrix = new string[row_col, row_col];
             int ind = 2;
-            for(int i=0; i< row_col; i++)
+            for (int i = 0; i < row_col; i++)
             {
-                for(int j=0;j< row_col; j++)
+                for (int j = 0; j < row_col; j++)
                 {
                     matrix[j, i] = stringarray.Substring(ind, 2);
-                    ind+=2;
+                    ind += 2;
                 }
-                    
+
             }
             return matrix;
         }
@@ -144,7 +144,7 @@ namespace SecurityLibrary.AES
             {
                 new_R = new_R ^ 283;
             }
-           
+
             rcon.Add(new_R.ToString("x2"));
         }
 
@@ -152,7 +152,7 @@ namespace SecurityLibrary.AES
         {
             string[,] new_key = new string[row_col, row_col];
             string[,] prev_W = new string[row_col, 1];
-            for(int i = 0; i < row_col; i++)
+            for (int i = 0; i < row_col; i++)
             {
                 prev_W[i, 0] = prev_key[i, row_col - 1];
             }
@@ -175,12 +175,12 @@ namespace SecurityLibrary.AES
                 new_key[i, 0] = XOR(prev_key[i, 0], prev_W[i, 0]);
             }
 
-            for(int j = 1; j < row_col; j++)
+            for (int j = 1; j < row_col; j++)
             {
-                for(int i = 0; i < row_col; i++)
+                for (int i = 0; i < row_col; i++)
                 {
-                    new_key[i, j] = XOR(prev_key[i, j], new_key[i, j-1]);
-                }       
+                    new_key[i, j] = XOR(prev_key[i, j], new_key[i, j - 1]);
+                }
             }
 
             return new_key;
@@ -195,21 +195,21 @@ namespace SecurityLibrary.AES
             return ans;
         }
 
-        public string[,] SubBytes(string [,] plain)
+        public string[,] SubBytes(string[,] plain)
         {
             int rowsOrHeight = plain.GetLength(0);
             int colsOrWidth = plain.GetLength(1);
             string[,] new_block = new string[row_col, row_col];
-            
 
-            for(int i = 0; i < rowsOrHeight; i++)
+
+            for (int i = 0; i < rowsOrHeight; i++)
             {
-                for(int j = 0; j < colsOrWidth; j++)
+                for (int j = 0; j < colsOrWidth; j++)
                 {
                     string curr_byte = plain[i, j];
                     if (curr_byte.Length == 1)
                     {
-                        curr_byte=curr_byte.Insert(0, "0");
+                        curr_byte = curr_byte.Insert(0, "0");
                     }
                     int[] RC = Byte_to_Int(curr_byte);
                     string new_byte = sbox[RC[0], RC[1]];
@@ -219,19 +219,19 @@ namespace SecurityLibrary.AES
 
             return new_block;
         }
-        
+
 
 
         public string[,] AddRoundKey(string[,] plain, string[,] key)
         {
             string[,] new_block = new string[row_col, row_col];
 
-            for(int i = 0; i < row_col; i++)
+            for (int i = 0; i < row_col; i++)
             {
                 for (int j = 0; j < row_col; j++)
                 {
                     int[] byte1 = Byte_to_Int(plain[i, j]), byte2 = Byte_to_Int(key[i, j]);
-                    int[] res = {byte1[0]^byte2[0], byte1[1]^byte2[1]};
+                    int[] res = { byte1[0] ^ byte2[0], byte1[1] ^ byte2[1] };
                     string ans = res[0].ToString("x") + res[1].ToString("x");
 
                     new_block[i, j] = ans;
@@ -245,7 +245,7 @@ namespace SecurityLibrary.AES
         {
             int[] res = new int[2];
             string a = Byte[0].ToString(), b = Byte[1].ToString();
-            if(Hex.ContainsKey(a)==true)
+            if (Hex.ContainsKey(a) == true)
                 res[0] = Hex[a];
             else
                 res[0] = int.Parse(a);
@@ -261,15 +261,15 @@ namespace SecurityLibrary.AES
             string[,] Sbox = new string[block_size, block_size];
             string file_name = (inverse ? "invers-sbox.txt" : "s-box.txt");
             string[] lines = File.ReadAllLines(file_name);
-            for(int index=0;index<block_size;index++)
+            for (int index = 0; index < block_size; index++)
             {
                 string line = lines[index];
                 string[] row = line.Split(seps, StringSplitOptions.RemoveEmptyEntries);
-                for(int j = 0; j < block_size; j++)
+                for (int j = 0; j < block_size; j++)
                 {
-                    
+
                     if (row[j].Length == 1)
-                        row[j]=row[j].Insert(0, "0");
+                        row[j] = row[j].Insert(0, "0");
                     Sbox[index, j] = row[j];
                 }
             }
@@ -285,7 +285,7 @@ namespace SecurityLibrary.AES
             {
                 for (int j = 0; j < row_col; j++)
                 {
-                    int col = (j + (row_col-i)) % row_col;
+                    int col = (j + (row_col - i)) % row_col;
                     newPlain[i, col] = plain[i, j];
                 }
             }
@@ -316,7 +316,7 @@ namespace SecurityLibrary.AES
                     int value = 0x00;
                     for (int k = 0; k < row_col; k++)
                     {
-                        value = value^GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[k, i], System.Globalization.NumberStyles.HexNumber));
+                        value = value ^ GetMultiplicationValue(constant_matrix[j, k], Int32.Parse(plain[k, i], System.Globalization.NumberStyles.HexNumber));
                     }
                     newPlain[j, i] = value.ToString("x2");
                 }
@@ -328,33 +328,12 @@ namespace SecurityLibrary.AES
         {
             if (r == 0x01)
                 return Byte;
-            else if (r == 0x02)
-            {
-                if ((Byte & 10000000) > 0)
-                {
-                    Byte = (Byte << 1) & 0xff;
-                    Byte ^= 0x1b;
-                }
-                else
-                {
-                    Byte = (Byte << 1);
-                }
-                return Byte;
-            }
-            else
-            {
-                int r1 = Byte;
-                if ((Byte & 10000000) > 0)
-                {
-                    Byte = (Byte << 1) & 0xff;
-                    Byte ^= 0x1b;
-                }
-                else
-                {
-                    Byte = (Byte << 1);
-                }
-                return Byte ^ r1;
-            }
+            else if (r == 0x02) return Helper.mul2[(int)Byte];
+            else if (r == 0x03) return Helper.mul_3[(int)Byte];
+            else if (r == 0x0E) return Helper.mul_14[(int)Byte];
+            else if (r == 0x0B) return Helper.mul_11[(int)Byte];
+            else if (r == 0x0D) return Helper.mul_13[(int)Byte];
+            else return Helper.mul_9[(int)Byte];
         }
     }
 }
