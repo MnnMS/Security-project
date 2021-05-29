@@ -21,47 +21,51 @@ namespace SecurityLibrary.AES
         };
         List<string> rcon;
         int[,] mixCol_matrix = { { 0x02, 0x03, 0x01, 0x01 }, { 0x01, 0x02, 0x03, 0x01 }, { 0x01, 0x01, 0x02, 0x03 }, { 0x03, 0x01, 0x01, 0x02 } };
-        int[,] InvmixCol_matrix = { { 0x0E, 0x0B, 0x0D, 0x09 }, { 0x09, 0x0E, 0x0B, 0x0D }, { 0x0D, 0x09, 0x0E, 0x0B }, { 0x0B, 0x0D, 0x09, 0x0E } };
+        int[,] InvmixCol_matrix = { { 0x0e, 0x0b, 0x0d, 0x09 }, { 0x09, 0x0e, 0x0b, 0x0d }, { 0x0d, 0x09, 0x0e, 0x0b }, { 0x0b, 0x0d, 0x09, 0x0e } };
         string[,] sbox; int[,] constant_matrix;
+
+        public List<string[,]> get_keys(string [,] key)
+        {
+            sbox = read_SBox(false);
+            List<string[,]> listOfKeys = new List<string[,]>();
+            listOfKeys.Add(key);
+            for (int i = 1; i <= 10; i++)
+            {
+                key = KeySchedule(listOfKeys[i - 1], i);
+                listOfKeys.Add(key);
+            }
+            return listOfKeys;
+        }
+
         public override string Decrypt(string cipherText, string key)
         {
             rcon = new List<string>();
-            sbox = read_SBox(true);
-            constant_matrix = InvmixCol_matrix;
             string[,] cipherTextMat = GetMatrix(cipherText.ToLower());
             string[,] keyMat = GetMatrix(key.ToLower());
-            
-            List<string[,]> listOfKeys = new List<string[,]>();
-            listOfKeys.Add(keyMat);
-            for (int i = 1  ; i <= 10; i++)
-            {
-                keyMat = KeySchedule(listOfKeys[i-1], i);
-                //cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-                listOfKeys.Add(keyMat);
-            }
+            List<string[,]> listOfKeys = get_keys(keyMat);
+
+            sbox = read_SBox(true);
+            constant_matrix = InvmixCol_matrix;
 
             cipherTextMat = AddRoundKey(cipherTextMat, listOfKeys[num_of_rounds]);
+            cipherTextMat = InvShiftRows(cipherTextMat);
+            cipherTextMat = SubBytes(cipherTextMat);
 
             for (int i = num_of_rounds - 1 ; i >= 1 ; i--)
             {
+                keyMat = listOfKeys[i];
+                cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
                 
+                cipherTextMat = MixColumns(cipherTextMat);
+
                 cipherTextMat = InvShiftRows(cipherTextMat);
 
                 cipherTextMat = SubBytes(cipherTextMat);
-
-                keyMat = listOfKeys[i];
-                cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-
-                cipherTextMat = MixColumns(cipherTextMat);
             }
-            cipherTextMat = InvShiftRows(cipherTextMat);
-
-            cipherTextMat = SubBytes(cipherTextMat);
             
             keyMat = listOfKeys[0];
             cipherTextMat = AddRoundKey(cipherTextMat, keyMat);
-
-            
+       
             return GetString(cipherTextMat);
         }
 
